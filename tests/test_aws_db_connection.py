@@ -52,7 +52,7 @@ def test_database_connection(db_connection):
     print("List of databases:")
     for db_info in databases_info:
         print(
-            f"Name: {db_info['Database']}, Owner: {db_info['Owner']}, Collation: {db_info['Collation']}")
+            f"Name: {db_info.get('Owner', 'N/A')}, Owner: {db_info.get('Collation', 'N/A')}")
 
     # * Check if 'database-1' exists
     print("Checking if 'database-1' exists:")
@@ -64,6 +64,10 @@ def test_database_connection(db_connection):
         create_database(db_connection, 'database-1')
         exists = check_database_exists(db_connection, 'database-1')
         assert exists, "Failed to create 'database-1', test aborted."
+        print("Updated List of databases:")
+        for db_info in databases_info:
+            print(
+                f"Name: {db_info.get('Owner', 'N/A')}, Owner: {db_info.get('Collation', 'N/A')}")
 
     print(f"The 'database-1' database exists: {exists}")
 
@@ -95,9 +99,10 @@ def get_database_properties(connection, database_name):
     db_info = {}
     try:
         with connection.cursor() as cursor:
-            cursor.execute(f"SHOW CREATE DATABASE {database_name}")
+            cursor.execute(f"SHOW CREATE DATABASE `{database_name}`")
             result = cursor.fetchone()
             if result:
+                print("Result:", result)  # Add this line for debugging
                 # Parse the result to extract database properties
                 create_statement = result[1]
                 owner_start = create_statement.find(
@@ -110,7 +115,6 @@ def get_database_properties(connection, database_name):
                 collation_end = len(create_statement)
                 collation = create_statement[collation_start:collation_end].strip(
                 )
-                db_info['Database'] = database_name
                 db_info['Owner'] = owner
                 db_info['Collation'] = collation
     except Exception as e:
@@ -134,7 +138,7 @@ def create_database(connection, database_name):
     """Create a database."""
     try:
         with connection.cursor() as cursor:
-            cursor.execute(f"CREATE DATABASE {database_name}")
+            cursor.execute(f"CREATE DATABASE `{database_name}`")
         print(f"Database '{database_name}' created successfully.")
     except Exception as e:
         print(f"Error creating database '{database_name}': {e}")
@@ -144,7 +148,7 @@ def remove_database(connection, database_name):
     """Remove a database."""
     try:
         with connection.cursor() as cursor:
-            cursor.execute(f"DROP DATABASE {database_name}")
+            cursor.execute(f"DROP DATABASE `{database_name}`")
         print(f"Database '{database_name}' removed successfully.")
     except Exception as e:
         print(f"Error removing database '{database_name}': {e}")
