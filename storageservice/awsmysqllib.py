@@ -66,7 +66,7 @@ class AWSMySQLLib:
                 cursor.execute("SHOW DATABASES")
                 result = cursor.fetchall()
                 databases = [item[0] for item in result]
-                print("List of databases:")
+                self.logger.info("List of databases:")
                 for db in databases:
                     self.logger.info(f"Name: {db}")
         except Exception as e:
@@ -132,6 +132,79 @@ class AWSMySQLLib:
         except Exception as e:
             self.logger.exception(
                 f"Error removing database '{database_name}': {e}")
+
+    def insert_record(self, table, data):
+        """
+        Insert a record into the specified table.
+
+        Args:
+            table (str): The name of the table.
+            data (dict): A dictionary containing the column names and values for the new record.
+
+        Returns:
+            int: The ID of the inserted record if successful, -1 otherwise.
+        """
+        try:
+            with self.connection.cursor() as cursor:
+                columns = ', '.join(data.keys())
+                values = ', '.join(f"'{value}'" for value in data.values())
+                query = f"INSERT INTO {table} ({columns}) VALUES ({values})"
+                cursor.execute(query)
+                self.connection.commit()
+                record_id = cursor.lastrowid
+                self.logger.info(
+                    f"Record inserted successfully. Record ID: {record_id}")
+                return record_id
+        except Exception as e:
+            self.logger.exception(f"Error inserting record: {e}")
+            return -1
+
+    def update_record(self, table, record_id, data):
+        """
+        Update a record in the specified table.
+
+        Args:
+            table (str): The name of the table.
+            record_id (int): The ID of the record to update.
+            data (dict): A dictionary containing the column names and new values for the record.
+
+        Returns:
+            bool: True if the update is successful, False otherwise.
+        """
+        try:
+            with self.connection.cursor() as cursor:
+                updates = ', '.join(
+                    f"{key} = '{value}'" for key, value in data.items())
+                query = f"UPDATE {table} SET {updates} WHERE id = {record_id}"
+                cursor.execute(query)
+            self.connection.commit()
+            self.logger.info("Record updated successfully.")
+            return True
+        except Exception as e:
+            self.logger.exception(f"Error updating record: {e}")
+            return False
+
+    def delete_record(self, table, record_id):
+        """
+        Delete a record from the specified table.
+
+        Args:
+            table (str): The name of the table.
+            record_id (int): The ID of the record to delete.
+
+        Returns:
+            bool: True if the deletion is successful, False otherwise.
+        """
+        try:
+            with self.connection.cursor() as cursor:
+                query = f"DELETE FROM {table} WHERE id = {record_id}"
+                cursor.execute(query)
+            self.connection.commit()
+            self.logger.info("Record deleted successfully.")
+            return True
+        except Exception as e:
+            self.logger.exception(f"Error deleting record: {e}")
+            return False
 
     def close_connection(self):
         if self.connection and self.connection.open:
