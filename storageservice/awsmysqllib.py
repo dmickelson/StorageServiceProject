@@ -1,3 +1,4 @@
+from typing import Dict, Union, List
 import pymysql
 import configparser
 import socket
@@ -7,7 +8,7 @@ logging.config.fileConfig('logging_storageservice.cfg')
 
 
 class AWSMySQLLib:
-    def __init__(self, host, user, password, database, port):
+    def __init__(self, host: str, user: str, password: str, database: str, port: int):
         self.host = host
         self.user = user
         self.password = password
@@ -20,7 +21,7 @@ class AWSMySQLLib:
         self.logger.info("Initializing AWSMySQLLib")
 
     @classmethod
-    def init_from_file(cls, file_name: str):
+    def init_from_file(cls, file_name: str) -> Union[None, 'AWSMySQLLib']:
         config = configparser.ConfigParser()
         config.read(file_name)
         try:
@@ -36,18 +37,19 @@ class AWSMySQLLib:
             cls.logger.exception(err)
             return None
 
-    def test_can_reach_host(self):
+    def test_can_reach_host(self) -> bool:
         rds_host = self.host
         port = self.port
         try:
             with socket.create_connection((rds_host, port), timeout=5):
-                pass
+                return True
             self.logger.info(f"Can reach AWS RDS host: {rds_host}")
         except Exception as e:
             self.logger.exception(
                 f"Failed to reach AWS RDS host: {rds_host}, Error: {e}")
+            return False
 
-    def connect_to_database(self):
+    def connect_to_database(self) -> bool:
         try:
             self.connection = pymysql.connect(
                 host=self.host,
@@ -57,10 +59,12 @@ class AWSMySQLLib:
                 port=self.port
             )
             self.logger.debug("Connected to the database.")
+            return True
         except Exception as e:
             self.logger.debug(f"Error connecting to the database: {e}")
+            return False
 
-    def get_database_info(self):
+    def get_database_info(self) -> list:
         try:
             with self.connection.cursor() as cursor:
                 cursor.execute("SHOW DATABASES")
@@ -69,10 +73,12 @@ class AWSMySQLLib:
                 self.logger.info("List of databases:")
                 for db in databases:
                     self.logger.info(f"Name: {db}")
+                return databases
         except Exception as e:
             self.logger.exception(f"Error fetching database information: {e}")
+            return None
 
-    def get_database_properties(self, database_name):
+    def get_database_properties(self, database_name: str) -> Dict[str, str]:
         """Retrieve properties of a database."""
         db_info = {}
         try:
@@ -100,7 +106,7 @@ class AWSMySQLLib:
             self.logger.exception("Error fetching database properties: %s", e)
         return db_info
 
-    def check_database_exists(self, database_name):
+    def check_database_exists(self, database_name: str) -> bool:
         """Check if a database exists."""
         try:
             with self.connection.cursor() as cursor:
@@ -111,29 +117,33 @@ class AWSMySQLLib:
             self.logger.exception("Error checking if database exists: %s", e)
             return False
 
-    def create_database(self, database_name):
+    def create_database(self, database_name: str) -> bool:
         """Create a database."""
         try:
             with self.connection.cursor() as cursor:
                 cursor.execute(f"CREATE DATABASE `{database_name}`")
             self.logger.info(
                 f"Database '{database_name}' created successfully.")
+            return True
         except Exception as e:
             self.logger.exception(
                 f"Error creating database '{database_name}': {e}")
+            return False
 
-    def remove_database(self, database_name):
+    def remove_database(self, database_name: str) -> bool:
         """Remove a database."""
         try:
             with self.connection.cursor() as cursor:
                 cursor.execute(f"DROP DATABASE `{database_name}`")
             self.logger.info(
                 f"Database '{database_name}' removed successfully.")
+            return True
         except Exception as e:
             self.logger.exception(
                 f"Error removing database '{database_name}': {e}")
+            return False
 
-    def insert_record(self, table, data):
+    def insert_record(self, table: str, data: Dict[str, Union[str, int, float]]) -> int:
         """
         Insert a record into the specified table.
 
@@ -159,7 +169,7 @@ class AWSMySQLLib:
             self.logger.exception(f"Error inserting record: {e}")
             return -1
 
-    def update_record(self, table, record_id, data):
+    def update_record(self, table: str, record_id: int, data: Dict[str, Union[str, int, float]]) -> bool:
         """
         Update a record in the specified table.
 
@@ -184,7 +194,7 @@ class AWSMySQLLib:
             self.logger.exception(f"Error updating record: {e}")
             return False
 
-    def delete_record(self, table, record_id):
+    def delete_record(self, table: str, record_id: int) -> bool:
         """
         Delete a record from the specified table.
 
@@ -206,10 +216,13 @@ class AWSMySQLLib:
             self.logger.exception(f"Error deleting record: {e}")
             return False
 
-    def close_connection(self):
+    def close_connection(self) -> bool:
         if self.connection and self.connection.open:
             self.connection.close()
             self.logger.debug("Connection closed.")
+            return True
+        else:
+            return False
 
 
 if __name__ == "__main__":
