@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "storageservice"
+version = "1.0"
+description = "This is my Storage Service Lib project."
+authors = [
+    {name = "David Mickelson", email="davidpmickelson@gmail.com"},
+    {email = "davidpmickelson@gmail.com"}
+]
+license = {file = "LICENSE.txt"}
+readme = "README.md"
+requires-python = ">=3.6"
+
+keywords = ["Storage"]
+
+classifiers = [
+    "Topic :: Storage"
+]

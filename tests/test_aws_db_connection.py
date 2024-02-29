@@ -1,5 +1,5 @@
 import pytest
-from awsmysqllib import AWSMySQLLib
+from storageservice import awsmysqllib
 from typing import Dict, Union
 
 # Set your actual AWS RDS credentials
@@ -10,15 +10,15 @@ AWS_RDS_DATABASE = 'your_database'
 AWS_RDS_PORT = 3306  # Change to your actual port
 
 
+# ? Set your actual AWS RDS credentials
+AWS_RDS_CONFIG_FILE = 'awsmysql.cfg'  # Change to your actual file path
+
+# ? pytest -v test_aws_db_connection.py
+
+
 @pytest.fixture
 def aws_database():
-    aws_db = AWSMySQLLib(
-        host=AWS_RDS_HOST,
-        user=AWS_RDS_USER,
-        password=AWS_RDS_PASSWORD,
-        database=AWS_RDS_DATABASE,
-        port=AWS_RDS_PORT
-    )
+    aws_db = awsmysqllib.AWSMySQLLib.init_from_file(AWS_RDS_CONFIG_FILE)
     aws_db.connect_to_database()
     yield aws_db
     aws_db.close_connection()
