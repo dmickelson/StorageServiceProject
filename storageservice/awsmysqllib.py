@@ -276,6 +276,38 @@ class AWSMySQLLib:
             self.logger.exception(f"Error deleting table '{table_name}': {e}")
             return False
 
+    def list_entries_in_table(self, table: str) -> Union[List[Dict[str, Union[str, int, float]]], None]:
+        """
+        List all entries within a specified table.
+
+        Args:
+            table (str): The name of the table.
+
+        Returns:
+            Union[List[Dict[str, Union[str, int, float]]], None]: A list of entries if successful, None otherwise.
+        """
+        try:
+            with self.connection.cursor() as cursor:
+                cursor.execute(f"SELECT * FROM {table}")
+                result = cursor.fetchall()
+                columns = [desc[0] for desc in cursor.description]
+
+                entries = []
+                for row in result:
+                    entry = dict(zip(columns, row))
+                    entries.append(entry)
+
+                self.logger.info(f"Entries in table '{table}':")
+                for entry in entries:
+                    self.logger.info(entry)
+
+                return entries
+
+        except Exception as e:
+            self.logger.exception(
+                f"Error listing entries in table '{table}': {e}")
+            return None
+
     def insert_record(self, table: str, data: Dict[str, Union[str, int, float]]) -> int:
         """
         Insert a record into the specified table.

@@ -3,4 +3,5 @@ tests/logs/
 storageservice/__pycache__/
 storageservice.egg-info/
 tests/__pycache__/
-tests/__pycache__/test_aws_db_connection.cpython-310-pytest-8.0.2.pyc
+storageservice/awsmysql.cfg
+tests/awsmysql.cfg

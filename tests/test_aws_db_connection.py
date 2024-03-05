@@ -86,23 +86,39 @@ def test_list_tables(aws_database):
     assert result is not None, "Failed to list tables with columns"
 
 
+def print_entries(entries):
+    # * Check if the method returned entries
+    print(f"Printing Entries")
+    if entries is not None:
+        for entry in entries:
+            print(entry)
+    else:
+        print(f"Failed to list entries in table '{TABLE_NAME}'.")
+
+
 def test_insert_update_delete_record(aws_database):
     table_name = TABLE_NAME
-
     # * Insert a record
     # * columns = {'id': 'INT', 'name': 'VARCHAR(255)', 'age': 'INT'}
     data_to_insert = {'id': 123, 'name': 'John', 'age': 40}
     record_id = aws_database.insert_record(table_name, data_to_insert)
     assert record_id != -1, "Failed to insert record"
+    # * Call the method to list entries in the table
+    entries = aws_database.list_entries_in_table(table_name)
+    print_entries(entries)
 
     # * Update the inserted record
     data_to_update = {'age': '20'}
     assert aws_database.update_record(
         table_name, record_id, data_to_update), "Failed to update record"
+    entries = aws_database.list_entries_in_table(table_name)
+    print_entries(entries)
 
     # * Delete the updated record
     assert aws_database.delete_record(
         table_name, record_id), "Failed to delete record"
+    entries = aws_database.list_entries_in_table(table_name)
+    print_entries(entries)
 
 
 def test_delete_table(aws_database):
