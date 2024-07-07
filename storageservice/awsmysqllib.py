@@ -8,7 +8,21 @@ logging.config.fileConfig('logging_storageservice.cfg')
 
 
 class AWSMySQLLib:
+    """
+    A library for interacting with an AWS MySQL RDS instance.
+    """
+
     def __init__(self, host: str, user: str, password: str, database: str, port: int):
+        """
+        Initialize the AWSMySQLLib instance with the given connection parameters.
+
+        Args:
+            host (str): The hostname of the MySQL server.
+            user (str): The username for the MySQL server.
+            password (str): The password for the MySQL server.
+            database (str): The database name.
+            port (int): The port number for the MySQL server.
+        """
         self.host = host
         self.user = user
         self.password = password
@@ -22,6 +36,15 @@ class AWSMySQLLib:
 
     @classmethod
     def init_from_file(cls, file_name: str) -> Union[None, 'AWSMySQLLib']:
+        """
+        Initialize an AWSMySQLLib instance from a configuration file.
+
+        Args:
+            file_name (str): The name of the configuration file.
+
+        Returns:
+            Union[None, 'AWSMySQLLib']: An instance of AWSMySQLLib if successful, None otherwise.
+        """
         config = configparser.ConfigParser()
         config.read(file_name)
         try:
@@ -38,6 +61,12 @@ class AWSMySQLLib:
             return None
 
     def test_can_reach_host(self) -> bool:
+        """
+        Test if the MySQL host can be reached.
+
+        Returns:
+            bool: True if the host can be reached, False otherwise.
+        """
         rds_host = self.host
         port = self.port
         self.logger.debug(
@@ -53,6 +82,12 @@ class AWSMySQLLib:
             return False
 
     def connect_to_rds_host(self) -> bool:
+        """
+        Connect to the AWS RDS host.
+
+        Returns:
+            bool: True if the connection is successful, False otherwise.
+        """
         rds_host = self.host
         port = self.port
         self.logger.debug(
@@ -75,6 +110,12 @@ class AWSMySQLLib:
             return False
 
     def connect_to_database(self) -> bool:
+        """
+        Connect to the specified database on the AWS RDS host.
+
+        Returns:
+            bool: True if the connection is successful, False otherwise.
+        """
         rds_host = self.host
         database = self.database
         port = self.port
@@ -98,7 +139,12 @@ class AWSMySQLLib:
             return False
 
     def get_database_info(self) -> list:
-        """Retrieve detailed information about databases."""
+        """
+        Retrieve detailed information about databases.
+
+        Returns:
+            list: A list of dictionaries containing database information.
+        """
         databases_info = []
         try:
             with self.connection.cursor() as cursor:
@@ -115,7 +161,15 @@ class AWSMySQLLib:
             return None
 
     def get_database_properties(self, database_name: str) -> Dict[str, str]:
-        """Retrieve properties of a database."""
+        """
+        Retrieve properties of a database.
+
+        Args:
+            database_name (str): The name of the database.
+
+        Returns:
+            Dict[str, str]: A dictionary containing database properties.
+        """
         db_info = {}
         try:
             with self.connection.cursor() as cursor:
@@ -143,7 +197,15 @@ class AWSMySQLLib:
         return db_info
 
     def check_database_exists(self, database_name: str) -> bool:
-        """Check if a database exists."""
+        """
+        Check if a database exists.
+
+        Args:
+            database_name (str): The name of the database.
+
+        Returns:
+            bool: True if the database exists, False otherwise.
+        """
         try:
             with self.connection.cursor() as cursor:
                 cursor.execute(f"SHOW DATABASES LIKE '{database_name}'")
@@ -158,7 +220,15 @@ class AWSMySQLLib:
             return False
 
     def create_database(self, database_name: str) -> bool:
-        """Create a database."""
+        """
+        Create a database.
+
+        Args:
+            database_name (str): The name of the database to create.
+
+        Returns:
+            bool: True if the database creation is successful, False otherwise.
+        """
         try:
             with self.connection.cursor() as cursor:
                 cursor.execute(f"CREATE DATABASE `{database_name}`")
@@ -171,7 +241,15 @@ class AWSMySQLLib:
             return False
 
     def remove_database(self, database_name: str) -> bool:
-        """Remove a database."""
+        """
+        Remove a database.
+
+        Args:
+            database_name (str): The name of the database to remove.
+
+        Returns:
+            bool: True if the database removal is successful, False otherwise.
+        """
         try:
             with self.connection.cursor() as cursor:
                 cursor.execute(f"DROP DATABASE `{database_name}`")
@@ -382,6 +460,12 @@ class AWSMySQLLib:
             return False
 
     def close_connection(self) -> bool:
+        """
+        Close the connection to the MySQL database if it is open.
+
+        Returns:
+            bool: True if the connection was successfully closed, False if there was no connection to close.
+        """
         if self.connection and self.connection.open:
             self.connection.close()
             self.logger.debug("Connection closed.")
