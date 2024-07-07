@@ -11,6 +11,7 @@ This repository contains the `AWSMySQLLib` class, which provides a convenient in
 - Create and remove databases and tables.
 - Insert, update, delete, and list records in tables.
 - Manage database connections efficiently.
+- Pytest integration for testing all functionalities.
 
 ## Requirements
 
@@ -18,6 +19,7 @@ This repository contains the `AWSMySQLLib` class, which provides a convenient in
 - `pymysql` library
 - `configparser` library
 - `socket` library
+- `pytest` library
 - `logging` library
 
 ## Installation
@@ -115,6 +117,16 @@ print(f"Inserted record ID: {record_id}")
 
 # Close the connection
 aws_db.close_connection()
+```
+
+## Testing
+
+This project includes pytest tests to ensure the library functions as expected. The tests are located in the _tests_ directory and cover all major functionalities of the library.
+
+To run the tests, use:
+
+```
+pytest -sv test_aws_db_connection.py
 ```
 
 ## Logging
